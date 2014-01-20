@@ -19,7 +19,7 @@ for directory in jsonlist:
     if not directory in DBList:
         DBList[directory] = dict()
     for filename in jsonlist[directory]:
-        parseJSON(DBList[directory], directory + "/" + filename)
+        commentCompile.parseJSON(DBList[directory], directory + "/" + filename)
 
 save = open("DBsave.pickle", "w")
 pickle.dump(DBList, save)

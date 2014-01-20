@@ -1,4 +1,4 @@
-import commentGrapher
+import commentCompiler
 import pickle
 
 load = open("DBsave.pickle", "r")
