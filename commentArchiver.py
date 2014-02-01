@@ -3,6 +3,7 @@ import json
 import re
 import os
 import time
+import sys
 
 
 """This file is used to download the top 100 posts (by hot) from the reddits listed in the list reddits and save them, structured and with unique hashes, into r/."""
@@ -14,7 +15,12 @@ headers = {
 
 unneededFields = ["subreddit_id", "banned_by", "subreddit", "saved", "id", "parent_id", "approved_by", "edited", "author_flair_css_class", "body_html", "link_id", "score_hidden", "name", "created", "author_flair_text", "distinguished", "num_reports"]
 
-reddits = ["mildlyinteresting", "worldnews", "askreddit", "todayilearned", "explainlikeimfive", "askscience", "programming"]
+if len(sys.argv) < 2:
+    reddits = ["mildlyinteresting", "worldnews", "askreddit", "todayilearned", "explainlikeimfive", "askscience", "programming", "mineralporn", "knitting", "whatsthisbug"]
+else:
+    reddits = [sys.argv[1]]
+
+
 
 cwd = os.getcwd() #"current working directory"
 
@@ -31,19 +37,27 @@ def removeUnneededFieldsFromData(comment):
 
 
 def stripAndSave(link):
-    starttime = time.time()
-    url = r'http://www.reddit.com%s.json' % (link[:-1])
-    raw = requests.get(url, headers=headers)
-    data = raw.json()
-    subreddit = data[0]["data"]["children"][0]["data"]["subreddit"]
-    title = data[0]["data"]["children"][0]["data"]["permalink"]
-    # Extract the unique part of the Reddit URL, ie the parts after 'comment/'
-    m = re.search('comments/([\w\d]+/[\w+]+)', title) 
-    title = m.group(1)
-    title = re.sub('/', ':', title)
-    filename = "r/" + subreddit + "/" + title + ".json"
-    for child in data[1]["data"]["children"]:
-       removeUnneededFieldsFromData(child) # strip the irrelevant cruft from the json files, halving their storage space
+    try:
+        starttime = time.time()
+        url = r'http://www.reddit.com%s.json' % (link[:-1])
+        raw = requests.get(url, headers=headers)
+        data = raw.json()
+        subreddit = data[0]["data"]["children"][0]["data"]["subreddit"]
+        title = data[0]["data"]["children"][0]["data"]["permalink"]
+        # Extract the unique part of the Reddit URL, ie the parts after 'comment/'
+        m = re.search('comments/([\w\d]+/[\w+]+)', title) 
+        title = m.group(1)
+        title = re.sub('/', ':', title)
+        filename = "r/" + subreddit + "/" + title + ".json"
+        for child in data[1]["data"]["children"]:
+            removeUnneededFieldsFromData(child) # strip the irrelevant cruft from the json files, halving their storage space
+    except AttributeError:
+        return # skip attribute errors. This seems to happen if the URL has Unicode in it.
+    except simplejson.decoder.JSONDecodeError:
+        return
+    except:
+        print "Unexpected error:", sys.exc_info()[0]
+        raise
     if not os.path.isdir(cwd + "/" + subreddit):
         try:
             os.makedirs("r/" + subreddit + "/")
@@ -57,11 +71,6 @@ def stripAndSave(link):
     if endtime - starttime < 2:
         time.sleep(2 - (endtime - starttime))
     
-
-"""print "started"
-stripAndSave(r'/r/todayilearned/comments/1vexzs/til_when_ignored_by_that_person_whose_attention.json')
-
-quit()"""
 
 loopstart = time.time()
 for reddit in reddits:
