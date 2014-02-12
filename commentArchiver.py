@@ -4,7 +4,7 @@ import re
 import os
 import time
 import sys
-
+import datetime
 
 """This file is used to download the top 100 posts (by hot) from the reddits listed in the list reddits and save them, structured and with unique hashes, into r/."""
 
@@ -16,7 +16,7 @@ headers = {
 unneededFields = ["subreddit_id", "banned_by", "subreddit", "saved", "id", "parent_id", "approved_by", "edited", "author_flair_css_class", "body_html", "link_id", "score_hidden", "name", "created", "author_flair_text", "distinguished", "num_reports"]
 
 if len(sys.argv) < 2:
-    reddits = ["mildlyinteresting", "worldnews", "askreddit", "todayilearned", "explainlikeimfive", "askscience", "programming", "mineralporn", "knitting", "whatsthisbug"]
+    reddits = ["mildlyinteresting", "worldnews", "askreddit", "todayilearned", "explainlikeimfive", "askscience", "programming", "mineralporn", "talesfromretail", "talesfromtechsupport"]
 else:
     reddits = [sys.argv[1]]
 
@@ -72,6 +72,9 @@ def stripAndSave(link):
         time.sleep(2 - (endtime - starttime))
     
 
+log = open("log.log", "a")
+ts = time.time()
+log.write("Started at " + datetime.datetime.fromtimestamp(ts).strftime("%m-%d-%y %H:%M:%S") + "\n")
 loopstart = time.time()
 for reddit in reddits:
     print "Reading from subreddit /r/%s" % (reddit)
@@ -89,3 +92,4 @@ for reddit in reddits:
 loopend = time.time()
 
 print str(loopend - loopstart) + " seconds elapsed, total"
+log.write("Finished successfully at " + date.today().strftime("%m-%d-%y %H:%M:%S") +"\n")
