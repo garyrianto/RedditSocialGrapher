@@ -1,0 +1,150 @@
+<style>
+body {
+    overflow:hidden;
+}
+
+#UI {
+    width:20%;
+    max-width:200px;
+    right:0px;
+    position:fixed;
+    padding-right:1%
+}
+
+#graph {
+    float:left;
+}
+
+</style>
+
+<body>
+    <script src="d3.js" charset="utf-8"></script>
+    <div id="graph"></div>
+    
+    <div id="UI">
+        <button type="button" onclick="hide(this)">Hide labels</button>
+        <button type="button" onclick="center()">Center</button><br>
+        <button type="button" onclick="hide_drom(this)">Hide Dromaeosauridae</button><br>
+        <button type="button" onclick="log()">Log</button>
+    </div>    
+    
+    <script>
+        var zoomHandler = d3.behavior.zoom().on("zoom", redraw); // Save the Zoom object to use later in resetting the "camera"
+    
+        function hide_drom(button) {
+            var droms = d3.selectAll(".Dromaeosauridae");
+            if (button.innerHTML == "Hide Dromaeosauridae") {
+                button.innerHTML = "Show Dromaeosauridae";
+                droms.attr("display", "none");
+            }
+            else {
+                button.innerHTML = "Hide Dromaeosauridae";
+                droms.attr("display", "");
+            }
+        }
+        
+        function log() {
+            var zoom = d3.behavior.zoom();
+            console.log(zoom.scale() + " " + zoom.translate());
+        }
+    
+        function center() {           
+            var container = d3.select("#container");
+            zoomHandler.translate([0,0]);
+            zoomHandler.scale(1);            
+            container.transition()
+                     .duration(750)
+                     .attr("transform", "translate(0, 0) scale(1)");   
+         }
+    
+        function hide(button) {
+            var labels = d3.select("#labels");
+            if (button.innerHTML == "Hide labels") {
+                button.innerHTML = "Show labels";
+                labels.attr("display", "none");
+            }
+            else {
+                button.innerHTML = "Hide labels";
+                labels.attr("display", "");
+            }                 
+        }     
+        
+        var svgWidth = 0;
+        var svgHeight = 0;
+        var startX = 0;
+        var startY = 0;
+        
+        // code ran on load
+        var svg = d3.select("#graph").append("svg").attr("id", "myGraph");
+        d3.json("MineralPorn.json", 
+                function(error, data) {
+                    var viewboxArray = data["viewBox"].split(" ");
+                    startX = viewboxArray[0];
+                    startY = viewboxArray[1];
+                    svgWidth = viewboxArray[2];
+                    svgHeight = viewboxArray[3];                 
+                    
+                    svg.attr("width", data["width"])
+                       .attr("height", data["height"])
+                       .attr("viewBox", data["viewBox"])
+                       .call(zoomHandler);
+                        
+                    // append container to hold all the sub-groups
+                    var container = svg.append("g").attr("id", "container");
+                    
+                    var edges = container.append("g").attr("id", "edges");
+                    edges.selectAll("path")
+                         .data(data["edges"])
+                         .enter()
+                         .append("path")
+                         .attr("fill", function(d) { return d["fill"];} )
+                         .attr("stroke-width", function(d) { return d["stroke-width"];} )
+                         .attr("d", function(d) { return d["d"];} )
+                         .attr("class", function(d) { return d["class"];} )
+                         .attr("stroke", function(d) { return d["stroke"];} )
+                         
+                    var arrows = container.append("g").attr("id", "arrows");
+                    arrows.selectAll("polyline")
+                          .data(data["arrows"])
+                          .enter()
+                          .append("polyline")
+                          .attr("fill", function(d) { return d["fill"];} )
+                          .attr("class", function(d) { return d["class"];} )
+                          .attr("points", function(d) { return d["points"];} )
+                          .attr("stroke", function(d) { return d["stroke"];} );
+                       
+                    var nodes = container.append("g").attr("id", "nodes");
+                    nodes.selectAll("circle")
+                         .data(data["nodes"])
+                         .enter()
+                         .append("circle")
+                         .attr("r", function(d) { return d["r"];} )
+                         .attr("fill", function(d) { return d["fill"];} )
+                         .attr("cx", function(d) { return d["cx"];} )
+                         .attr("cy", function(d) { return d["cy"];} )
+                         .attr("class", function(d) { return d["class"];} )
+                         .attr("stroke", function(d) { return d["stroke"];} )
+                         .attr("stroke-width", function(d) { return d["stroke-width"];} );
+                     
+                    var labels = container.append("g").attr("id", "labels");
+                    labels.selectAll("text")
+                          .data(data["labels"])
+                          .enter()
+                          .append("text")
+                          .attr("font-size", function(d) { return d["font-size"];} )
+                          .attr("x", function(d) { return d["x"];} )
+                          .attr("y", function(d) { return d["y"];} )
+                          .attr("fill", function(d) { return d["fill"];} )
+                          .attr("style", function(d) { return d["style"];} )
+                          .attr("font-family", function(d) { return d["font-family"];} )
+                          .attr("class", function(d) { return d["class"];} )
+                          .text(function(d) { return d["text"];} );
+                    });
+            
+        function redraw() {      
+            d3.select("#container").attr("transform", "translate(" + d3.event.translate + ")" 
+                                         + " scale(" + d3.event.scale + ")");
+        }
+                    
+    </script>
+</body>
