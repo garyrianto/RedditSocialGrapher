@@ -13,7 +13,7 @@ headers = {
             'User-Agent': "'Comment social graph data collector' by /u/Corticotropin"
           }
 
-unneededFields = ["subreddit_id", "banned_by", "subreddit", "saved", "id", "parent_id", "approved_by", "edited", "author_flair_css_class", "body_html", "link_id", "score_hidden", "name", "created", "author_flair_text", "distinguished", "num_reports"]
+unneededFields = ["banned_by", "saved", "approved_by", "author_flair_css_class", "author_flair_text", "distinguished", "num_reports"]
 
 if len(sys.argv) < 2:
     reddits = ["mildlyinteresting", "worldnews", "askreddit", "todayilearned", "explainlikeimfive", "askscience", "programming", "mineralporn", "talesfromretail", "talesfromtechsupport"]
