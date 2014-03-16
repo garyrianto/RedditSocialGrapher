@@ -21,6 +21,7 @@ for directory in jsonlist:
     for filename in jsonlist[directory]:
         commentCompile.parseJSON(DBList[directory], directory + "/" + filename)
 
-save = open("DBsave.pickle", "w")
-pickle.dump(DBList, save)
-save.close()
+for subreddit in DBList:
+    save = open("DBs/" + subreddit[4:] + "_db.pickle", "w")
+    pickle.dump(DBList[subreddit], save)
+    save.close()

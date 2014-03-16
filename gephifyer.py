@@ -15,14 +15,14 @@ else:
 path = "./r/" + subreddit
 
 try:
-    load = open("DBsave.pickle", "r")
+    load = open("DBs/" + subreddit + "_db.pickle", "r")
     DB = pickle.load(load)
     load.close()
 except IOError as e:
     print "I/O error({0}): {1}".format(e.errno, e.strerror)    
     quit()
 
-archive = DB[path]
+archive = DB
 
 output = open("out/" + subreddit + ".csv", "w")
 
