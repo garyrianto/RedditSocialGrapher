@@ -1,0 +1,33 @@
+body {
+    overflow:hidden;
+}
+
+#UI {
+    width:20%;
+    max-width:200px;
+    height:80%;
+    right:0px;
+    position:fixed;
+    padding-right:1%
+}
+
+#graph {
+    float:left;
+}
+
+.javascriptlink {
+    cursor:pointer;
+    color:black;
+    border-bottom-style:solid;
+    border-width:1px;
+}
+
+.list {
+    overflow:auto;
+    min-height:10%;
+    height:90%;
+}
+
+a:hover,a.hover {
+    text-decoration:underline;
+}
