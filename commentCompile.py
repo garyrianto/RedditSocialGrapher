@@ -9,7 +9,9 @@ import os
 class Person:
     def __init__(self, ID):
         self.ID = ID
-        self.replies = dict()
+        self.replies = dict() # The number of replies & to whom this person has made.
+        self.commentsMade = 0;
+        self.commentsRecieved = 0;
     
     def addReply(self, repliedTo):
         if repliedTo in self.replies:
@@ -57,3 +59,22 @@ def parseJSON(DB, filename):
         if len(rep["data"]["replies"]) > 0:
             replies = rep["data"]["replies"]["data"]["children"]
             readComment(DB, replies, rep["data"]["author"])
+    
+    incomingReplies = dict()
+    for key in DB:
+        DB[key].commentsMade = len(DB[key].replies);
+        # Compile a list of how many times each person recieved a reply.
+        for person in DB[key].replies:
+            if not DB[key].replies[person] in incomingReplies:
+                incomingReplies[person] = DB[key].replies[person]
+            else:
+                incomingReplies[person] += DB[key].replies[person]
+    
+    # May cause a problem with people only recieving a reply.
+    for person in incomingReplies:
+        if not person in DB:
+            buffer = Person(person)
+            buffer.commentsRecieved = incomingReplies[person]
+            DB[person] = buffer
+        else:
+            DB[person].commentsRecieved = incomingReplies[person]

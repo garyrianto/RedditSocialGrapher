@@ -1,19 +1,26 @@
 import xml.etree.ElementTree as ET
 import json
 import sys
+import commentCompile
+import pickle
 
 """This script converts a SVG file into a JSON file for data assignment using d3. 
 This script should be replaced with a more holistic one that integrates original data that is lost during the svg conversion, such as post content or upvotes."""
 
 filename = sys.argv[1];
+if filename[-4:] == ".svg":
+    filename = filename[:-4]
 
+container = list()
 jsonrep = dict()
 edges = list()
 nodes = list()
 arrows = list()
 labels = list()
 
-tree = ET.parse(filename)
+additionalInfo = dict()
+
+tree = ET.parse(filename + ".svg")
 root = tree.getroot()
 
 svgattribs = root.attrib
@@ -46,5 +53,22 @@ jsonrep["width"] = width
 jsonrep["height"] = height
 jsonrep["viewBox"] = viewbox
 
-file = open(filename[:-4] + ".json", "w")
-file.write(json.dumps(jsonrep, sort_keys=True, indent=4, separators=(',', ': ')))
+# Next, read in the context.
+context = open("DBs/" + filename + "_db.pickle", "r")
+DB = pickle.load(context)
+context.close()
+
+
+for key in DB:
+    buffer = dict()
+    buffer["name"] = DB[key].ID;
+    buffer["in"] = DB[key].commentsRecieved;
+    buffer["out"] = DB[key].commentsMade;
+    additionalInfo[key] = buffer;
+
+
+container.append(jsonrep)
+container.append(additionalInfo)
+
+file = open(filename + ".json", "w")
+file.write(json.dumps(container, sort_keys=True, indent=4, separators=(',', ': ')))

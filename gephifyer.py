@@ -12,6 +12,9 @@ if len(sys.argv) > 2:
 else:
     cutoff = 2
 
+if subreddit[-4:] == ".svg":
+    subreddit = subreddit[:-4]
+
 path = "./r/" + subreddit
 
 try:
