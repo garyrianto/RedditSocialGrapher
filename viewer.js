@@ -11,11 +11,12 @@ function center() {
 
 function hide(button) {
     var labels = d3.select("#labels");
-    if (button.text == "Hide labels") {
-        button.text = "Show labels";
+    hidden = !hidden;
+    if (hidden) {
+        button.innerHTML = "Show labels";
         labels.attr("display", "none");
     } else {
-        button.text = "Hide labels";
+        button.innerHTML = "Hide labels";
         labels.attr("display", "");
     }
 }
@@ -24,8 +25,10 @@ var svgWidth = 0;
 var svgHeight = 0;
 var startX = 0;
 var startY = 0;
+var hidden = false;
 var context; // array from json
 var removedNodes = [];
+var focusedNode = undefined;
 
 // code ran on load
 function init() {
@@ -41,11 +44,12 @@ function init() {
             svgWidth = viewboxArray[2];
             svgHeight = viewboxArray[3];
 
-            svg.attr("width", data["width"])
-                .attr("height", data["height"])
+
+            svg.attr("width", data["width"].slice(0,data["width"].length-2))
+                .attr("height", data["height"].slice(0,data["height"].length-2))
                 .attr("viewBox", data["viewBox"])
                 .call(zoomHandler);
-
+            resizeSVG();
             // append container to hold all the sub-groups
             var container = svg.append("g").attr("id", "container");
 
@@ -82,7 +86,7 @@ function init() {
                 .attr("class", function (d) {return d["class"];})
                 .attr("stroke", function (d) {return d["stroke"];})
                 .attr("stroke-width", function (d) {return d["stroke-width"];})
-                .on("click", function (d) {showInfo(d);})
+                .on("click", function (d) { setAndShowDetails(d); })
                 .on("contextmenu", function(d) {removeElement(d);} );
 
             var labels = container.append("g").attr("id", "labels");
@@ -97,12 +101,13 @@ function init() {
                 .attr("style", function (d) {return d["style"];})
                 .attr("font-family", function (d) {return d["font-family"];})
                 .attr("class", function (d) {return d["class"];})
-                .text(function (d) {return d["text"];});
-                
+                .text(function (d) {return d["text"];})
+                .on("click", function (d) { setAndShowDetails(d); })
             
         });
         
     showControls();
+    d3.select(window).on("resize", resizeSVG);
 }
 
 function redraw() {
@@ -125,8 +130,6 @@ function removeElement (d) {
     removedNodes.push(elementname);
     updateNodeList();
 }
-
-
 
 function restoreElement (d, i) {
     removedNodes.splice(i, 1);
@@ -167,7 +170,12 @@ function updateNodeList() {
 function showControls() {
     d3.selectAll(".sidebar").selectAll("*").remove();
     var page = d3.select("#controls");
-    page.append("button").attr("type","button").text("Hide labels").attr("onclick", "hide(this)");
+    var button = page.append("button").attr("type","button").attr("onclick", "hide(this)");
+    if (hidden) {
+        button.text("Show labels");
+    } else {
+        button.text("Hide labels");
+    }
     page.append("button").attr("type","button").text("Center").on("click", center);
 }
 
@@ -182,6 +190,68 @@ function showNodes(buttoned) {
     if (buttoned) {
         updateNodeList();
     }
+}
+
+function setAndShowDetails(d) {
+    focusedNode = d;
+    showDetails();
+}
+
+function showDetails() {
+    d3.selectAll(".sidebar").selectAll("*").remove();
+    var page = d3.select("#details");
+    if (focusedNode == undefined) {
+        return;
+    }
+    var data = context[focusedNode["class"]];
+    // Displays name & link to
+    page.append("strong").append("a").attr("target","_blank").attr("href","http://www.reddit.com/user/" + data["name"]).text("/r/" + data["name"]);    
+    
+    var row = page.append("table").append("tr");
+    row.append("td").html("<em>Replies recieved:</em>");
+    row.append("td").style("padding-left","5%").html(data["in"]);
+    
+    row = page.select("table").append("tr");
+    row.append("td").html("<em>Replies written:</em>");
+    row.append("td").style("padding-left","5%").html(data["out"]);
+    
+    var links = data["contexts"];
+    var comment = page.append("div").attr("class","commentHolder");
+    comment.selectAll("p").data(links).enter().append("p").append("a").on("click", function(d) {expandComment(d, this);}).text(function(d) {return d;});
+    
+}
+
+function resizeSVG() {
+    var graph = d3.select("#myGraph");
+    var ratio = graph.attr("height") / graph.attr("width");
+    var newWidth = d3.select("#graph").style("width");
+    newWidth = newWidth.slice(0,newWidth.length-2);
+    graph.attr("width", newWidth);
+    graph.attr("height", newWidth * ratio);
+}
+
+// Turn a Reddit json comment into html
+function writeComment(data) {
+    return "<span class=\"username\">" + data["author"] + "</span> <span class=\"body\">" + data["body"] + "</span>";
+}
+
+function foldComment() {
+    var base = d3.select(this.parentNode.parentNode);
+    base.select(".unfoldedComment").style("display","none");
+    base.select(".foldedComment").style("display","");    
+}
+
+// Currently link->comment
+function expandComment(d, a) {
+    d3.json("http://www.reddit.com" + d + ".json", function(error, jsondata) {
+            var topComment = jsondata[1]["data"]["children"][0]["data"];
+            console.log(jsondata);
+            var p = d3.select(a.parentNode);
+            p.select("a").remove();
+            var thisComment = p.append("div").attr("class","comment");
+            thisComment.append("p").html(writeComment(topComment)).on("click", function(d) {foldComment(this);});;
+            thisComment.selectAll("div").data(topComment["replies"]["data"]["children"]).enter().append("div").attr("class","comment").html(function(d){return writeComment(d["data"]);});
+        });
 }
 
 document.addEventListener("DOMContentLoaded", init);

@@ -3,7 +3,7 @@ import os
 import json
 import pickle
 
-"""Call this file to """
+"""Call this file to process saved json files into pickle files"""
 
 DBList = dict()
 

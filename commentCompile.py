@@ -10,8 +10,9 @@ class Person:
     def __init__(self, ID):
         self.ID = ID
         self.replies = dict() # The number of replies & to whom this person has made.
-        self.commentsMade = 0;
-        self.commentsRecieved = 0;
+        self.parents = list() # Links to comments that were replied to by other people, or that the Person replied to.
+        self.commentsMade = 0
+        self.commentsRecieved = 0
     
     def addReply(self, repliedTo):
         if repliedTo in self.replies:
@@ -26,9 +27,12 @@ class Person:
         return str
 
 """A recursive function that traverses the comment tree"""
-def readComment(DB, tree, author): 
+def readComment(DB, tree, author, authorData, permalink): 
 # The author is the  person who the 'current' person replied to;
 # that is, this function adds a reply to all the children of that comment
+    link = permalink + authorData["id"] # reddit.com/r/subreddit/comments/threadID/threadname/commentID>
+    DB[author].parents.append(link);
+    
     for reply in tree:
         if not reply["kind"] == "t1":
             continue
@@ -36,8 +40,9 @@ def readComment(DB, tree, author):
         if not current in DB:
             DB[current] = Person(current)
         DB[current].addReply(author)
+        DB[current].parents.append(link);
         if len(reply["data"]["replies"]) > 0:
-            readComment(DB, reply["data"]["replies"]["data"]["children"], current)
+            readComment(DB, reply["data"]["replies"]["data"]["children"], current, reply["data"], permalink)
         
 
 """This is the function to call. 
@@ -48,7 +53,10 @@ def parseJSON(DB, filename):
     data = json.loads(rawdata)
 
     OP = data[0]["data"]["children"][0]["data"]["author"]
-
+    permalink = data[0]["data"]["children"][0]["data"]["permalink"]
+    if not OP in DB:
+        DB[OP] = Person(OP);
+        
     for rep in data[1]["data"]["children"]:
         if not rep["kind"] == "t1" or rep["kind"] == "Listing":
             continue
@@ -58,14 +66,14 @@ def parseJSON(DB, filename):
         DB[author].addReply(OP)
         if len(rep["data"]["replies"]) > 0:
             replies = rep["data"]["replies"]["data"]["children"]
-            readComment(DB, replies, rep["data"]["author"])
+            readComment(DB, replies, rep["data"]["author"], rep["data"], permalink)
     
     incomingReplies = dict()
     for key in DB:
         DB[key].commentsMade = len(DB[key].replies);
         # Compile a list of how many times each person recieved a reply.
         for person in DB[key].replies:
-            if not DB[key].replies[person] in incomingReplies:
+            if not person in incomingReplies:
                 incomingReplies[person] = DB[key].replies[person]
             else:
                 incomingReplies[person] += DB[key].replies[person]

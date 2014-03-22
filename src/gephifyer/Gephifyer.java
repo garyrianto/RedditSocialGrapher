@@ -31,6 +31,9 @@ import org.gephi.ranking.api.RankingController;
 import org.gephi.ranking.plugin.transformer.AbstractSizeTransformer;
 import org.gephi.statistics.plugin.Modularity;
 import org.openide.util.Lookup;
+import org.gephi.layout.plugin.force.StepDisplacement;
+import org.gephi.layout.plugin.force.yifanHu.YifanHu;
+import org.gephi.layout.plugin.force.yifanHu.YifanHuLayout;
 import org.gephi.layout.plugin.openord.*;
 
 public class Gephifyer {
@@ -38,13 +41,29 @@ public class Gephifyer {
 	public void doStuff(String[] args)
 	{
 		String filename = new String();
+		String algorithm = new String();
 		try{
 			filename = args[0];
 		} catch (ArrayIndexOutOfBoundsException ex) {
 			System.out.println("Supply the subreddit name as the argument.");
 			System.exit(0);
 		}
-		filename += ".csv";
+		try {
+			algorithm = args[1];
+			if (algorithm != "openord" && algorithm != "yifanhu") {
+				algorithm = "openord";
+			}
+				
+		} catch (ArrayIndexOutOfBoundsException ex) {
+			System.out.println("No algorithm specified, defaulting to OpenOrd.");
+			algorithm = "openord";
+		}
+		/*
+		 * Algorithms:
+		 * openord
+		 * yifanhu
+		 */
+		
 		ProjectController pc = Lookup.getDefault().lookup(ProjectController.class);
 		pc.newProject();
 		Workspace workspace = pc.getCurrentWorkspace();
@@ -52,7 +71,7 @@ public class Gephifyer {
 		ImportController importController = Lookup.getDefault().lookup(ImportController.class);
 		Container container;
 		try{
-			File file = new File(filename);
+			File file = new File(filename + ".csv");
 			//File file = new File(getClass().getResource("askscience.csv").toURI());
 			container = importController.importFile(file);
 			container.getLoader().setEdgeDefault(EdgeDefault.DIRECTED);
@@ -70,16 +89,31 @@ public class Gephifyer {
 		// Now let's manipulate the graph api, which stores / serves graphs
 		System.out.println("Nodes: " + directedGraph.getNodeCount() + "\nEdges: " + directedGraph.getEdgeCount());
 		
-		//Run OpenOrd.
-		OpenOrdLayout layout = new OpenOrdLayout(null);
-		layout.setGraphModel(graphModel);
-		layout.resetPropertiesValues();
-		layout.initAlgo();
-		layout.goAlgo();
-		while (layout.canAlgo()) // This is only possible because OpenOrd has a finite number of iterations.
-		{
+		//Run the algorithm
+		if (algorithm == "openord"){
+			OpenOrdLayout layout = new OpenOrdLayout(null);
+			layout.setGraphModel(graphModel);
+			layout.resetPropertiesValues();
+			layout.initAlgo();
 			layout.goAlgo();
+			while (layout.canAlgo()) // both algorithms have finite iterations.
+			{
+				layout.goAlgo();
+			}
 		}
+		else {
+			YifanHuLayout layout = new YifanHuLayout(null, new StepDisplacement(0.95f));
+			layout.setGraphModel(graphModel);
+			layout.resetPropertiesValues();
+			layout.initAlgo();
+			layout.goAlgo();
+			while (layout.canAlgo()) // both algorithms have finite iterations.
+			{
+				layout.goAlgo();
+			}
+		}		
+		
+		
 		
 		AttributeModel attributemodel = Lookup.getDefault().lookup(AttributeController.class).getModel();
 		
@@ -105,21 +139,22 @@ public class Gephifyer {
         sizeTransformer.setMaxSize(40.0f);
         rankingController.transform(degreeRanking,sizeTransformer);
         
-        // Finally the preview model
+        // Finally, the preview model
         PreviewController previewController = Lookup.getDefault().lookup(PreviewController.class);
         PreviewModel previewModel = previewController.getModel();
         previewModel.getProperties().putValue(PreviewProperty.SHOW_NODE_LABELS, Boolean.TRUE);
         previewModel.getProperties().putValue(PreviewProperty.NODE_LABEL_COLOR, new DependantOriginalColor(Color.BLACK));
+        previewModel.getProperties().putValue(PreviewProperty.NODE_LABEL_FONT, previewModel.getProperties().getFontValue(PreviewProperty.NODE_LABEL_FONT).deriveFont(8));
         previewModel.getProperties().putValue(PreviewProperty.EDGE_CURVED, Boolean.FALSE);
         previewModel.getProperties().putValue(PreviewProperty.EDGE_OPACITY, 50);
-        previewModel.getProperties().putValue(PreviewProperty.EDGE_RADIUS, 10f);
         previewModel.getProperties().putValue(PreviewProperty.BACKGROUND_COLOR, Color.TRANSLUCENT);
+        
         previewController.refreshPreview();
         
         System.out.println("starting export");
         ExportController ec = Lookup.getDefault().lookup(ExportController.class);
         try{
-        	ec.exportFile(new File("askscience.svg"));
+        	ec.exportFile(new File(filename + ".svg"));
         }
         catch (IOException ex){
         	ex.printStackTrace();

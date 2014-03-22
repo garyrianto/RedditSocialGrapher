@@ -64,6 +64,7 @@ for key in DB:
     buffer["name"] = DB[key].ID;
     buffer["in"] = DB[key].commentsRecieved;
     buffer["out"] = DB[key].commentsMade;
+    buffer["contexts"] = DB[key].parents;    
     additionalInfo[key] = buffer;
 
 
