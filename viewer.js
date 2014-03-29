@@ -235,22 +235,54 @@ function writeComment(data) {
     return "<span class=\"username\">" + data["author"] + "</span> <span class=\"body\">" + data["body"] + "</span>";
 }
 
-function foldComment() {
-    var base = d3.select(this.parentNode.parentNode);
-    base.select(".unfoldedComment").style("display","none");
-    base.select(".foldedComment").style("display","");    
+function writeFoldedComment(data) {
+    var result = data["author"];
+    if (data["replies"] != "")
+        if (data["replies"]["data"]["children"].length > 0) {
+            result += " and " + data["replies"]["data"]["children"].length + " comments";
+        }
+    return result;
+}
+
+function foldComment(par) {
+console.log("fold!");
+    var base = d3.select(par.parentNode.parentNode);
+    base.attr("class", "foldedComment"); 
+    /*base.select(".unfoldedComment").style("display","none");
+    base.select(".foldedComment").style("display", "");*/
+}
+
+function unfoldComment(par) {
+    var base = d3.select(par.parentNode.parentNode);
+    base.attr("class", "comment"); 
+    /*base.select(".unfoldedComment").style("display", "");
+    base.select(".foldedComment").style("display","none");   */ 
+}
+
+// First param should be an unfoldedComment, the second the json
+function recursivelyDrawComments(parent, data) {
+    // The container for folded/unfolded pair
+    var thisComment = parent.append("div").attr("class","comment");
+    // Next draw the unfolded comment
+    var unfolded = thisComment.append("div").attr("class","unfoldedCommentContent");
+    // Link the click to unfolding
+    unfolded.append("p").html(writeComment(data)).on("click", function(d) {foldComment(this);});
+    // Draw the folded version
+    thisComment.append("div").attr("class","foldedCommentContent").append("p").html(writeFoldedComment(data)).on("click", function(d) {unfoldComment(this);});
+    
+   if (data.replies != "")
+    for (var i = 0; i < data["replies"]["data"]["children"].length; i++) {
+        recursivelyDrawComments(unfolded, data["replies"]["data"]["children"][i]["data"]);
+    }
 }
 
 // Currently link->comment
 function expandComment(d, a) {
     d3.json("http://www.reddit.com" + d + ".json", function(error, jsondata) {
             var topComment = jsondata[1]["data"]["children"][0]["data"];
-            console.log(jsondata);
             var p = d3.select(a.parentNode);
             p.select("a").remove();
-            var thisComment = p.append("div").attr("class","comment");
-            thisComment.append("p").html(writeComment(topComment)).on("click", function(d) {foldComment(this);});;
-            thisComment.selectAll("div").data(topComment["replies"]["data"]["children"]).enter().append("div").attr("class","comment").html(function(d){return writeComment(d["data"]);});
+            recursivelyDrawComments(p, topComment);            
         });
 }
 

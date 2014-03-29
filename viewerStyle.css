@@ -44,31 +44,53 @@ p {
 
 .commentHolder {
     overflow:auto;
+    margin:0 1px 8px 8px;
 }
 
 .comment {
     width:90%;
+    min-width:50px;
     overflow:auto;
     padding:10;
+    padding-top:0;
     border-style:solid;
     border-width:1px;
-}
-
-.unfoldedComment {
-
+    margin:0 1px 8px 10px;
 }
 
 .foldedComment {
+    width:90%;
+    min-width:50px;
+    overflow:auto;
+    padding:10;
+    padding-top:0;
+    border-style:solid;
+    border-width:1px;
+    margin:0 1px 8px 10px;
+}
+
+.foldedComment .unfoldedCommentContent {
+    display:none;
+}
+
+.foldedComment .foldedCommentContent {
     font-style:italic;
     color:grey;
 }
 
-span username {
+.comment>.foldedCommentContent {
+    display:none;
+}
+
+.comment>.unfoldedCommentContent {
+}
+
+span.username {
     color:#2E3B5C;
     font-size:18px;
     display:block;
 }
 
-span body {
-    margin-left: 10px;
+span.body {
+    margin-left: 5px;
 }
