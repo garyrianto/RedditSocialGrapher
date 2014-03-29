@@ -231,8 +231,12 @@ function resizeSVG() {
 }
 
 // Turn a Reddit json comment into html
+function getUsernameSpan(data) {
+    return "<span class=\"username\">" + data["author"] + "</span>";
+}
+
 function writeComment(data) {
-    return "<span class=\"username\">" + data["author"] + "</span> <span class=\"body\">" + data["body"] + "</span>";
+    return "<span class=\"body\">" + data["body"] + "</span>";
 }
 
 function writeFoldedComment(data) {
@@ -244,31 +248,40 @@ function writeFoldedComment(data) {
     return result;
 }
 
+function writePoints(data) {
+    var points = data["ups"] - data["downs"];
+    return " " + points + " points";
+}
+
 function foldComment(par) {
 console.log("fold!");
     var base = d3.select(par.parentNode.parentNode);
     base.attr("class", "foldedComment"); 
-    /*base.select(".unfoldedComment").style("display","none");
-    base.select(".foldedComment").style("display", "");*/
 }
 
 function unfoldComment(par) {
     var base = d3.select(par.parentNode.parentNode);
     base.attr("class", "comment"); 
-    /*base.select(".unfoldedComment").style("display", "");
-    base.select(".foldedComment").style("display","none");   */ 
 }
 
 // First param should be an unfoldedComment, the second the json
 function recursivelyDrawComments(parent, data) {
     // The container for folded/unfolded pair
     var thisComment = parent.append("div").attr("class","comment");
+        
     // Next draw the unfolded comment
     var unfolded = thisComment.append("div").attr("class","unfoldedCommentContent");
     // Link the click to unfolding
-    unfolded.append("p").html(writeComment(data)).on("click", function(d) {foldComment(this);});
+    unfolded.append("span").attr("class","foldbutton").html("[–]").on("click", function(d) {foldComment(this);});
+    unfolded.append("span").attr("class","username").text(data["author"]);
+    unfolded.append("span").attr("class","points").text(writePoints(data));
+    unfolded.append("p").html(writeComment(data));
     // Draw the folded version
-    thisComment.append("div").attr("class","foldedCommentContent").append("p").html(writeFoldedComment(data)).on("click", function(d) {unfoldComment(this);});
+    
+    var folded = thisComment.append("div").attr("class","foldedCommentContent");
+    folded.append("span").attr("class","unfoldbutton").text("[+]").on("click", function(d) {unfoldComment(this);})
+    folded.append("span").attr("class", "foldedName").text(" " + writeFoldedComment(data));
+    folded.append("span").attr("class","points").text(writePoints(data));
     
    if (data.replies != "")
     for (var i = 0; i < data["replies"]["data"]["children"].length; i++) {

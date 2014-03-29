@@ -56,7 +56,6 @@ def parseJSON(DB, filename):
     permalink = data[0]["data"]["children"][0]["data"]["permalink"]
     if not OP in DB:
         DB[OP] = Person(OP);
-        
     for rep in data[1]["data"]["children"]:
         if not rep["kind"] == "t1" or rep["kind"] == "Listing":
             continue

@@ -33,10 +33,6 @@ a:hover,a.hover {
     text-decoration:underline;
 }
 
-p {
-
-}
-
 .sidebar {
     overflow:auto;
     max-height:90%;
@@ -52,7 +48,6 @@ p {
     min-width:50px;
     overflow:auto;
     padding:10;
-    padding-top:0;
     border-style:solid;
     border-width:1px;
     margin:0 1px 8px 10px;
@@ -63,19 +58,18 @@ p {
     min-width:50px;
     overflow:auto;
     padding:10;
-    padding-top:0;
     border-style:solid;
     border-width:1px;
     margin:0 1px 8px 10px;
 }
 
-.foldedComment .unfoldedCommentContent {
+.foldedComment>.unfoldedCommentContent {
     display:none;
 }
 
-.foldedComment .foldedCommentContent {
+span.foldedName {
     font-style:italic;
-    color:grey;
+    color:#606060;
 }
 
 .comment>.foldedCommentContent {
@@ -88,9 +82,42 @@ p {
 span.username {
     color:#2E3B5C;
     font-size:18px;
-    display:block;
+    padding:10;
+}
+
+span.points {
+    color:gray;
+    font-size:12px;
+}
+
+.foldedCommentContent>span.points {
+    font-style:italic;
 }
 
 span.body {
     margin-left: 5px;
 }
+
+span.foldbutton {
+    color:blue;
+    margin:0;
+    padding:0;
+    cursor:pointer;
+}
+
+span.foldbutton:hover {
+    background-color:#0066CC;
+    color:white;
+}
+
+span.unfoldbutton {
+    color:gray;
+    cursor:pointer;
+}
+
+span.unfoldbutton:hover {
+    color:blue;
+    background-color:#0066CC;
+    color:white;
+}
+
