@@ -47,10 +47,10 @@ a:hover,a.hover {
     width:90%;
     min-width:50px;
     overflow:auto;
-    padding:10;
+    padding:5px 10px;
     border-style:solid;
     border-width:1px;
-    margin:0 1px 8px 10px;
+    margin:0 1px 5px 5px;
 }
 
 .foldedComment {
@@ -79,10 +79,16 @@ span.foldedName {
 .comment>.unfoldedCommentContent {
 }
 
+.unfoldedCommentContent>p {
+    margin-top:0;
+}
+
 span.username {
     color:#2E3B5C;
     font-size:18px;
-    padding:10;
+    padding-right:10;
+    padding-left:10;
+    padding-bottom:0;
 }
 
 span.points {
@@ -121,3 +127,9 @@ span.unfoldbutton:hover {
     color:white;
 }
 
+a.context {
+    color:#707070;
+    font-size:12px;
+    cursor:pointer;
+    text-decoration:none;
+}

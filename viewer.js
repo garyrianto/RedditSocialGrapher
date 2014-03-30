@@ -203,6 +203,7 @@ function showDetails() {
     if (focusedNode == undefined) {
         return;
     }
+    page.append("span").attr("id","top");
     var data = context[focusedNode["class"]];
     // Displays name & link to
     page.append("strong").append("a").attr("target","_blank").attr("href","http://www.reddit.com/user/" + data["name"]).text("/r/" + data["name"]);    
@@ -219,6 +220,7 @@ function showDetails() {
     var comment = page.append("div").attr("class","commentHolder");
     comment.selectAll("p").data(links).enter().append("p").append("a").on("click", function(d) {expandComment(d, this);}).text(function(d) {return d;});
     
+    page.append("a").attr("href","#top");
 }
 
 function resizeSVG() {
@@ -235,8 +237,22 @@ function getUsernameSpan(data) {
     return "<span class=\"username\">" + data["author"] + "</span>";
 }
 
+var divre = new RegExp("<div class=\"md\">", "g");
+function unescapeHTML(html) {
+    var string = html;
+    string = string.replace(/&apos;/g, "\'");
+    string = string.replace(/&quot;/g,"\"");
+    string = string.replace(/&amp;/g,"\&");
+    string = string.replace(/&lt;/g,"<");
+    string = string.replace(/&gt;/g,">");
+    string = string.replace(divre, "");
+    string = string.replace(/<\/div>/g, "");
+    return string;
+}
+
 function writeComment(data) {
-    return "<span class=\"body\">" + data["body"] + "</span>";
+    console.log(unescapeHTML(data["body_html"]));
+    return "<span class=\"body\">" + unescapeHTML(data["body_html"])+ "</span>";
 }
 
 function writeFoldedComment(data) {
@@ -265,7 +281,7 @@ function unfoldComment(par) {
 }
 
 // First param should be an unfoldedComment, the second the json
-function recursivelyDrawComments(parent, data) {
+function recursivelyDrawComments(parent, data, baselink) {
     // The container for folded/unfolded pair
     var thisComment = parent.append("div").attr("class","comment");
         
@@ -275,7 +291,7 @@ function recursivelyDrawComments(parent, data) {
     unfolded.append("span").attr("class","foldbutton").html("[–]").on("click", function(d) {foldComment(this);});
     unfolded.append("span").attr("class","username").text(data["author"]);
     unfolded.append("span").attr("class","points").text(writePoints(data));
-    unfolded.append("p").html(writeComment(data));
+    unfolded.append("p").html(writeComment(data)).append("a").attr("class","context").attr("target","_blank").attr("href",baselink + data["id"]).text("context");
     // Draw the folded version
     
     var folded = thisComment.append("div").attr("class","foldedCommentContent");
@@ -285,7 +301,7 @@ function recursivelyDrawComments(parent, data) {
     
    if (data.replies != "")
     for (var i = 0; i < data["replies"]["data"]["children"].length; i++) {
-        recursivelyDrawComments(unfolded, data["replies"]["data"]["children"][i]["data"]);
+        recursivelyDrawComments(unfolded, data["replies"]["data"]["children"][i]["data"], baselink);
     }
 }
 
@@ -293,9 +309,10 @@ function recursivelyDrawComments(parent, data) {
 function expandComment(d, a) {
     d3.json("http://www.reddit.com" + d + ".json", function(error, jsondata) {
             var topComment = jsondata[1]["data"]["children"][0]["data"];
+            var baselink = "http://www.reddit.com" + jsondata[0].data.children[0].data.permalink;
             var p = d3.select(a.parentNode);
             p.select("a").remove();
-            recursivelyDrawComments(p, topComment);            
+            recursivelyDrawComments(p, topComment, baselink);            
         });
 }
 
