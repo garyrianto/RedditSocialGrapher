@@ -92,4 +92,4 @@ for reddit in reddits:
 loopend = time.time()
 
 print str(loopend - loopstart) + " seconds elapsed, total"
-log.write("Finished successfully at " + date.today().strftime("%m-%d-%y %H:%M:%S") +"\n")
+log.write("Finished successfully at " + datetime.datetime.fromtimestamp(ts).strftime("%m-%d-%y %H:%M:%S") +"\n")

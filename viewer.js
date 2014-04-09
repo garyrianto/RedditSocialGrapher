@@ -1,5 +1,11 @@
 var zoomHandler = d3.behavior.zoom().on("zoom", redraw); // Save the Zoom object to use later in resetting the "camera"
 
+var SUBREDDIT = "";
+function getSubreddit() {
+SUBREDDIT = window.location.href.split("/");
+SUBREDDIT = SUBREDDIT[SUBREDDIT.length-1]; // Get the current URL's final part and set it as the subreddit! It's a hack, but it probably works.
+}
+
 function center() {
     var container = d3.select("#container");
     zoomHandler.translate([0, 0]);
@@ -32,8 +38,9 @@ var focusedNode = undefined;
 
 // code ran on load
 function init() {
+    getSubreddit();
     var svg = d3.select("#graph").append("svg").attr("id", "myGraph");
-    d3.json("askscience.json",
+    d3.json("http://localhost:8080/graph/out/" + SUBREDDIT + ".json",
         function (error, jsonData) {
             var data = jsonData[0];
             context = jsonData[1];
@@ -251,8 +258,7 @@ function unescapeHTML(html) {
 }
 
 function writeComment(data) {
-    console.log(unescapeHTML(data["body_html"]));
-    return "<span class=\"body\">" + unescapeHTML(data["body_html"])+ "</span>";
+    return "<span class=\"body\">" + data["body"]+ "</span>";
 }
 
 function writeFoldedComment(data) {

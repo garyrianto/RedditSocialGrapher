@@ -20,7 +20,7 @@ labels = list()
 
 additionalInfo = dict()
 
-tree = ET.parse(filename + ".svg")
+tree = ET.parse("out/" + filename + ".svg")
 root = tree.getroot()
 
 svgattribs = root.attrib
@@ -71,5 +71,5 @@ for key in DB:
 container.append(jsonrep)
 container.append(additionalInfo)
 
-file = open(filename + ".json", "w")
+file = open("out/" + filename + ".json", "w")
 file.write(json.dumps(container, sort_keys=True, indent=4, separators=(',', ': ')))

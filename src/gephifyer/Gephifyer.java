@@ -71,7 +71,7 @@ public class Gephifyer {
 		ImportController importController = Lookup.getDefault().lookup(ImportController.class);
 		Container container;
 		try{
-			File file = new File(filename + ".csv");
+			File file = new File("out/" + filename + ".csv");
 			//File file = new File(getClass().getResource("askscience.csv").toURI());
 			container = importController.importFile(file);
 			container.getLoader().setEdgeDefault(EdgeDefault.DIRECTED);
@@ -154,7 +154,7 @@ public class Gephifyer {
         System.out.println("starting export");
         ExportController ec = Lookup.getDefault().lookup(ExportController.class);
         try{
-        	ec.exportFile(new File(filename + ".svg"));
+        	ec.exportFile(new File("out/" + filename + ".svg"));
         }
         catch (IOException ex){
         	ex.printStackTrace();
