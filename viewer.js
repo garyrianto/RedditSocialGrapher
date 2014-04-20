@@ -1,10 +1,8 @@
 var zoomHandler = d3.behavior.zoom().on("zoom", redraw); // Save the Zoom object to use later in resetting the "camera"
 
-var SUBREDDIT = "";
-function getSubreddit() {
-SUBREDDIT = window.location.href.split("/");
-SUBREDDIT = SUBREDDIT[SUBREDDIT.length-1]; // Get the current URL's final part and set it as the subreddit! It's a hack, but it probably works.
-}
+
+var CONSTANTS = {"SUBREDDIT":"", "LIMIT":"", "ALGORITHM":""};
+
 
 function center() {
     var container = d3.select("#container");
@@ -38,9 +36,9 @@ var focusedNode = undefined;
 
 // code ran on load
 function init() {
-    getSubreddit();
+    getSubreddit(CONSTANTS);
     var svg = d3.select("#graph").append("svg").attr("id", "myGraph");
-    d3.json("http://localhost:8080/graph/out/" + SUBREDDIT + ".json",
+    d3.json("http://localhost:8080/graph/out/" + CONSTANTS.SUBREDDIT + CONSTANTS.LIMIT  + CONSTANTS.ALGORITHM + ".json",
         function (error, jsonData) {
             var data = jsonData[0];
             context = jsonData[1];
@@ -297,7 +295,7 @@ function recursivelyDrawComments(parent, data, baselink) {
     unfolded.append("span").attr("class","foldbutton").html("[–]").on("click", function(d) {foldComment(this);});
     unfolded.append("span").attr("class","username").text(data["author"]);
     unfolded.append("span").attr("class","points").text(writePoints(data));
-    unfolded.append("p").html(writeComment(data)).append("a").attr("class","context").attr("target","_blank").attr("href",baselink + data["id"]).text("context");
+    unfolded.append("p").html(writeComment(data) + "\n").append("a").attr("class","context").attr("target","_blank").attr("href",baselink + data["id"]).text("context");
     // Draw the folded version
     
     var folded = thisComment.append("div").attr("class","foldedCommentContent");

@@ -7,9 +7,14 @@ import pickle
 """This script converts a SVG file into a JSON file for data assignment using d3. 
 This script should be replaced with a more holistic one that integrates original data that is lost during the svg conversion, such as post content or upvotes."""
 
-filename = sys.argv[1];
+filename = sys.argv[1]
+limit = sys.argv[2]
 if filename[-4:] == ".svg":
     filename = filename[:-4]
+try:
+    algorithm = sys.argv[3]
+except:
+    algorithm = "openord"
 
 container = list()
 jsonrep = dict()
@@ -20,7 +25,7 @@ labels = list()
 
 additionalInfo = dict()
 
-tree = ET.parse("out/" + filename + ".svg")
+tree = ET.parse("out/" + filename + limit + algorithm + ".svg")
 root = tree.getroot()
 
 svgattribs = root.attrib
@@ -71,5 +76,5 @@ for key in DB:
 container.append(jsonrep)
 container.append(additionalInfo)
 
-file = open("out/" + filename + ".json", "w")
+file = open("out/" + filename + limit + algorithm + ".json", "w")
 file.write(json.dumps(container, sort_keys=True, indent=4, separators=(',', ': ')))

@@ -16,7 +16,10 @@ headers = {
 unneededFields = ["banned_by", "saved", "approved_by", "author_flair_css_class", "author_flair_text", "distinguished", "num_reports"]
 
 if len(sys.argv) < 2:
-    reddits = ["mildlyinteresting", "worldnews", "askreddit", "todayilearned", "explainlikeimfive", "askscience", "programming", "mineralporn", "talesfromretail", "talesfromtechsupport"]
+    file = open("tracked_subreddits", "r")
+    reddits = []
+    for line in file:
+        reddits.append(line)
 else:
     reddits = [sys.argv[1]]
 
@@ -76,7 +79,7 @@ log = open("log.log", "a")
 ts = time.time()
 log.write("Started at " + datetime.datetime.fromtimestamp(ts).strftime("%m-%d-%y %H:%M:%S") + "\n")
 loopstart = time.time()
-for reddit in reddits:
+for reddit in reddits:    
     print "Reading from subreddit /r/%s" % (reddit)
     r = requests.get(r'http://www.reddit.com/r/%s/hot.json?limit=100' % (reddit), headers = headers)
     data = r.json()
@@ -89,7 +92,7 @@ for reddit in reddits:
             print str(counter) + ": " + thing["data"]["title"]
             counter += 1
             stripAndSave(thing["data"]["permalink"])
-loopend = time.time()
+    loopend = time.time()
 
 print str(loopend - loopstart) + " seconds elapsed, total"
 log.write("Finished successfully at " + datetime.datetime.fromtimestamp(ts).strftime("%m-%d-%y %H:%M:%S") +"\n")

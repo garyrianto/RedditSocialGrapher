@@ -42,6 +42,7 @@ public class Gephifyer {
 	{
 		String filename = new String();
 		String algorithm = new String();
+		int limit = 0;
 		try{
 			filename = args[0];
 		} catch (ArrayIndexOutOfBoundsException ex) {
@@ -49,7 +50,15 @@ public class Gephifyer {
 			System.exit(0);
 		}
 		try {
-			algorithm = args[1];
+		    String limit_s = args[1];
+		    limit = Integer.parseInt(limit_s);
+		    
+	    } catch (ArrayIndexOutOfBoundsException ex) {
+			System.out.println("No limit specified");
+			System.exit(0);
+		}
+		try {
+			algorithm = args[2]; 
 			if (algorithm != "openord" && algorithm != "yifanhu") {
 				algorithm = "openord";
 			}
@@ -58,6 +67,7 @@ public class Gephifyer {
 			System.out.println("No algorithm specified, defaulting to OpenOrd.");
 			algorithm = "openord";
 		}
+		
 		/*
 		 * Algorithms:
 		 * openord
@@ -71,7 +81,7 @@ public class Gephifyer {
 		ImportController importController = Lookup.getDefault().lookup(ImportController.class);
 		Container container;
 		try{
-			File file = new File("out/" + filename + ".csv");
+			File file = new File("out/" + filename + limit + ".csv");
 			//File file = new File(getClass().getResource("askscience.csv").toURI());
 			container = importController.importFile(file);
 			container.getLoader().setEdgeDefault(EdgeDefault.DIRECTED);
@@ -154,7 +164,7 @@ public class Gephifyer {
         System.out.println("starting export");
         ExportController ec = Lookup.getDefault().lookup(ExportController.class);
         try{
-        	ec.exportFile(new File("out/" + filename + ".svg"));
+        	ec.exportFile(new File("out/" + filename + limit + algorithm + ".svg"));
         }
         catch (IOException ex){
         	ex.printStackTrace();
