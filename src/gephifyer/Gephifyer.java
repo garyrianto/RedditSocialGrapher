@@ -59,7 +59,7 @@ public class Gephifyer {
 		}
 		try {
 			algorithm = args[2]; 
-			if (algorithm != "openord" && algorithm != "yifanhu") {
+			if (!algorithm.equals("openord") && !algorithm.equals("yifanhu")) {
 				algorithm = "openord";
 			}
 				

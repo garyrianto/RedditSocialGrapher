@@ -182,6 +182,7 @@ function showControls() {
         button.text("Hide labels");
     }
     page.append("button").attr("type","button").text("Center").on("click", center);
+    page.append("button").attr("type","button").text("New graph").on("click", function(){window.location.replace("http://localhost:8080/grapher/");});
 }
 
 function showNodes(buttoned) {

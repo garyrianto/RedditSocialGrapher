@@ -11,11 +11,6 @@ if len(sys.argv) > 2:
     cutoff = int(sys.argv[2])
 else:
     cutoff = 2
-    
-try:
-    algorithm = sys.argv[3]
-except:
-    algorithm = "openord"
 
 if subreddit[-4:] == ".svg":
     subreddit = subreddit[:-4]
@@ -32,7 +27,7 @@ except IOError as e:
 
 archive = DB
 
-output = open("out/" + subreddit + str(cutoff) + algorithm ".csv", "w")
+output = open("out/" + subreddit + str(cutoff) + ".csv", "w")
 
 for person in archive:
         if (person == "[deleted]"):

@@ -50,14 +50,16 @@ if not os.path.isfile(dbpath) or os.path.getmtime(dbpath) <  one_day:
     lockfile.write("Archive updated\n")
     
 print "Gephify"
-# Package a file for gephi input
+# Package a file for gephi input.
 lockfile.write("Gephifying\n")
-cmd = subprocess.Popen("python gephifyer.py " + subreddit + " " + threshold, shell=True).wait()
+
+csvfile = "out/" + subreddit + threshold + ".csv"
+if not os.path.isfile(csvfile) or os.path.getmtime(csvfile) <  one_day:
+    cmd = subprocess.Popen("python gephifyer.py " + subreddit + " " + threshold, shell=True).wait()
 
 
 # Process via Gephi
 lockfile.write("Processing with Gephi\n")
-algorithm = "openord"
 cmd = subprocess.Popen("java -jar gephiAutomation.jar " + subreddit + " " + threshold + " " + algorithm, shell=True).wait()
 
 # Jsonify the resulting svg
